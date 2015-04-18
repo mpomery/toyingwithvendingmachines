@@ -341,19 +341,22 @@ Mark Tearle, October 2014
         self.do_send("102 Vend all motors complete\n")
 
     def do_vend(self,command):
-        if self.F.slots[int(command[2])][int(command[1])] == None:
-            self.do_send("153 Home sensors failing\n")
-        else:
-            for pos in "-\|/-\|/":
-                self.F.slots[int(command[2])][int(command[1])].value = pos
+        try:
+            if self.F.slots[int(command[2])][int(command[1])] == None:
+                self.do_send("153 Home sensors failing\n")
+            else:
+                for pos in "-\|/-\|/":
+                    self.F.slots[int(command[2])][int(command[1])].value = pos
+                    self.F.display()
+                    time.sleep(0.4)
+                self.F.collectionslot.value = "*THUNK*"
                 self.F.display()
-                time.sleep(0.4)
-            self.F.collectionslot.value = "*THUNK*"
-            self.F.display()
-            time.sleep(2)
-            self.F.collectionslot.value = "  PUSH"
-            self.F.display()
-            self.do_send("100 Vend successful\n")
+                time.sleep(2)
+                self.F.collectionslot.value = "  PUSH"
+                self.F.display()
+                self.do_send("100 Vend successful\n")
+        except:
+            self.do_send("151 No motor there\n")
 
     def do_display(self,string):
         self.textdisplay = "%-10.10s" % (string)
