@@ -75,6 +75,7 @@ class VendingMachine:
 					raise VendingException('Input socket has closed!')
 				s = s.strip('\r\n')
 			code = s[0:3]
+			#print(code)
 			text = s[4:]
 			if code in asynchronous_responses:
 				self.handle_event(code, text)
@@ -104,14 +105,15 @@ class VendingMachine:
 			#self.events.append((SWITCH, None))
 			self.interpret_switches(text)
 		elif code[0] == '2':
+			#print((KEY, int(code[1:3])))
 			self.events.append((KEY, int(code[1:3])))
 		else:
 			logging.warning('Unhandled event! (%s %s)\n'%(code,text))
 
 	def authed_message(self, message):
-		print 'self.challenge = %04x' % self.challenge
 		if self.challenge == None:
 			return message
+		print 'self.challenge = %04x' % self.challenge
 		crc = do_crc('%c%c'%(self.challenge >> 8, self.challenge & 0xff))
 		crc = do_crc(self.secret, crc)
 		crc = do_crc(message, crc)
@@ -185,3 +187,13 @@ class VendingMachine:
 		ret = self.events[0]
 		del self.events[0]
 		return ret
+
+	def get_key(self):
+		# Clear any current events
+		self.events = []
+		#self.get_response()
+		event = self.next_event()
+		while event[0] != 3:
+			event = self.next_event()
+		return event[1]
+
